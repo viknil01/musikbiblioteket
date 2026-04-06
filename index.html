@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Musikbiblioteket</title>
+<style>
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  th { cursor: pointer; background-color: #f2f2f2; }
+</style>
+</head>
+<body>
+
+<h2>Musikbiblioteket</h2>
+
+<div id="artist-filters">
+  <strong>Artist:</strong><br>
+  <!-- Checkboxes will be populated by JS -->
+</div>
+
+<table id="musicTable">
+  <thead>
+    <tr>
+      <th onclick="sortTable('datum')">Datum</th>
+      <th onclick="sortTable('titel')">Titel</th>
+      <th>Artist</th>
+      <th>Play</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody">
+    <!-- Rows will be populated by JS -->
+  </tbody>
+</table>
+
+<script>
+// Sample data with multiple artists for the first song
+const musicData = [
+  { datum: '2026-03-08', titel: 'tid', artist: ['elis','birk','viking','anton'], file: '2026-03-08 - tid.mp3' },
+  { datum: '2025-12-01', titel: 'Song B', artist: ['Artist 2'], file: 'songB.mp3' },
+  { datum: '2024-08-15', titel: 'Song C', artist: ['Artist 1'], file: 'songC.mp3' },
+  { datum: '2026-01-20', titel: 'Song D', artist: ['Artist 3'], file: 'songD.mp3' }
+];
+
+let sortDirection = { datum: true, titel: true }; // true = ascending
+let activeArtists = new Set();
+
+// Gather all unique artists
+const allArtists = [...new Set(musicData.flatMap(m => m.artist))];
+
+// Populate artist filters
+const filterDiv = document.getElementById('artist-filters');
+allArtists.forEach(artist => {
+  const label = document.createElement('label');
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.value = artist;
+  checkbox.checked = true;
+  activeArtists.add(artist);
+  checkbox.onchange = () => {
+    if(checkbox.checked) activeArtists.add(artist);
+    else activeArtists.delete(artist);
+    renderTable();
+  };
+  label.appendChild(checkbox);
+  label.appendChild(document.createTextNode(artist));
+  filterDiv.appendChild(label);
+  filterDiv.appendChild(document.createElement('br'));
+});
+
+// Render table
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  // Filter rows: include if any artist in song matches activeArtists
+  const filteredData = musicData.filter(m => m.artist.some(a => activeArtists.has(a)));
+
+  filteredData.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${row.datum}</td>
+      <td>${row.titel}</td>
+      <td>${row.artist.join(', ')}</td>
+      <td><audio controls src="${row.file}"></audio></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Sorting function
+function sortTable(field) {
+  musicData.sort((a, b) => {
+    if(field === 'datum') {
+      return sortDirection[field] ? new Date(a.datum) - new Date(b.datum)
+                                 : new Date(b.datum) - new Date(a.datum);
+    } else {
+      const comp = a[field].localeCompare(b[field]);
+      return sortDirection[field] ? comp : -comp;
+    }
+  });
+  sortDirection[field] = !sortDirection[field];
+  renderTable();
+}
+
+// Initial render
+renderTable();
+</script>
+
+</body>
+</html>
