@@ -1,21 +1,114 @@
-<!doctype HTML>
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<title>Musikbiblioteket</title>
+    <meta charset="utf-8">
+    <title>Musikbiblioteket</title>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            cursor: pointer;
+            background: #f4f4f4;
+        }
+        input {
+            margin-bottom: 10px;
+            padding: 6px;
+            width: 200px;
+        }
+    </style>
 </head>
 <body>
-	<h1>Musikbiblioteket</h1>
 
-	<p>tid (feat. elis, birk, anton)</p>
-	<audio controls>
-		<source src="tid.mp3" type="audio/mpeg">
-	</audio>
+<h1>Musikbiblioteket</h1>
 
-	<p>do re mi fa sola (feat. maya, moa)</p>
-	<audio controls>
-		<source src="do re mi fa sola.mp3" type="audio/mpeg">
-	</audio>
+<input type="text" id="filterInput" placeholder="Filter by artist...">
+
+<table id="songTable">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">Song</th>
+            <th onclick="sortTable(1)">Artist</th>
+            <th onclick="sortTable(2)">Date</th>
+            <th>Play</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+</table>
+
+<script>
+const songs = [
+    {
+        name: "tid",
+        artist: "elis, birk, anton",
+        date: "2024-01-01",
+        file: "tid.mp3"
+    },
+    {
+        name: "do re mi fa sola",
+        artist: "maya, moa",
+        date: "2024-02-01",
+        file: "do re mi fa sola.mp3"
+    }
+];
+
+function renderTable(data) {
+    const body = document.getElementById("tableBody");
+    body.innerHTML = "";
+
+    data.forEach(song => {
+        const row = `
+            <tr>
+                <td>${song.name}</td>
+                <td>${song.artist}</td>
+                <td>${song.date}</td>
+                <td>
+                    <audio controls>
+                        <source src="${song.file}" type="audio/mpeg">
+                    </audio>
+                </td>
+            </tr>
+        `;
+        body.innerHTML += row;
+    });
+}
+
+// Sorting
+let sortDirection = true;
+function sortTable(colIndex) {
+    const keys = ["name", "artist", "date"];
+
+    songs.sort((a, b) => {
+        if (a[keys[colIndex]] < b[keys[colIndex]]) return sortDirection ? -1 : 1;
+        if (a[keys[colIndex]] > b[keys[colIndex]]) return sortDirection ? 1 : -1;
+        return 0;
+    });
+
+    sortDirection = !sortDirection;
+    renderTable(songs);
+}
+
+// Filtering
+document.getElementById("filterInput").addEventListener("input", function() {
+    const value = this.value.toLowerCase();
+
+    const filtered = songs.filter(song =>
+        song.artist.toLowerCase().includes(value)
+    );
+
+    renderTable(filtered);
+});
+
+// Initial render
+renderTable(songs);
+</script>
+
 </body>
 </html>
